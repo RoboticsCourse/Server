@@ -262,6 +262,30 @@ function getVideoFiles(){
         });
 }
 
+function uploadVideo(){
+        var file_data = $("#file").prop("files")[0];
+        console.log(file_data.name)
+        var form_data = new FormData();
+	form_data.append("file", file_data) 
+        displayMSG("Uploading File","");
+        $.ajax({
+                method: "POST",
+                url: "/uploadVid/",
+                data: form_data,
+                contentType: false,
+                cache: false,
+                processData: false,
+        }).done(function (data) {
+                if (!data.success){
+                        displayMSG("File Uploaded","");
+                }
+                else {
+                        displayMSG("",data.error);
+                }
+                
+        });
+}
+
 $(function () {
         $("#success").hide();
         $("#error").hide();
@@ -339,5 +363,8 @@ $(function () {
         });
         $("#pairs").on('click', function () {
                 createPairs()
+        });
+        $("#video").on('click', function () {
+                uploadVideo()
         });
 });

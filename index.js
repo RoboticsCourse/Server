@@ -5,6 +5,7 @@ var path = require('path');
 const child_process = require('child_process');
 var spawn = require("child_process").spawn;
 var port = 10023;
+const multer = require('multer');
 
 const sqlite3 = require('sqlite3').verbose();
 
@@ -24,6 +25,19 @@ var db = new sqlite3.Database('db/database.db', (err) => {
   }
   console.log('Connected to the database.');
 });
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './static-content/videos/')
+  },
+  filename: function (req, file, cb) {
+    console.log(file)
+    cb(null, file.originalname)
+  }
+})
+ 
+var upload = multer({ storage: storage })
+
 
 app.get('/getInfo/', function (req, res) {
   res.json({ "filename": recentImg, "data": data, "serverOn": serverOn });
@@ -183,6 +197,17 @@ app.put('/createImages/', function (req, res) {
   process.stdout.on('data', function (data) {
     res.send(data.toString());
   })
+})
+
+app.post('/uploadVid/', upload.single('file'), (req, res, next) => {
+  const file = req.file;
+  console.log("Filename: " + file);
+  if (!file) {
+    const error = new Error('Please upload a file')
+    error.httpStatusCode = 400
+    res.send({"success": false, "error": "Please upload a file"});
+  }
+  res.send({"success": true});
 })
 
 app.get('/getPairs/', function (req, res) {
