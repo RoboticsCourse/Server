@@ -57,51 +57,93 @@ function getPairInfo() {
         });
 }
 
+function displayMSG(success, error){
+        $("#success").hide();
+        $("#error").hide();
+
+        if (success != ""){
+                $("#success").show();
+                $("#success").html(success);
+        }
+        else if (error != ""){
+                $("#error").show();
+                $("#error").html(error);
+        }
+}
+
 function getJSON() {
+        displayMSG("Getting JSON File","");
         $.ajax({
                 method: "GET",
                 url: "/getJSON/"
         }).done(function (data) {
-                var link = document.createElement("a");
-                link.download = data.filename;
-                link.href = data.path;
-                link.click();
+                if (data.success){
+                        var link = document.createElement("a");
+                        link.download = data.filename;
+                        link.href = data.path;
+                        link.click();
+                        displayMSG("Started Downloading JSON","");
+                }
+                else {
+                        displayMSG("",data.error); 
+                }
         });
 }
 
 function getDB() {
+        displayMSG("Zipping DB Folder","");
         $.ajax({
                 method: "GET",
                 url: "/getDB/"
         }).done(function (data) {
-                var link = document.createElement("a");
-                link.download = data.filename;
-                link.href = data.path;
-                link.click();
+                if (data.success){
+                        var link = document.createElement("a");
+                        link.download = data.filename;
+                        link.href = data.path;
+                        link.click();
+                        displayMSG("Started Downloading DB","");
+                }
+                else {
+                        displayMSG("",data.error); 
+                }
         });
 }
 
 function getModel() {
+        displayMSG("Zipping Model Folder","");
         $.ajax({
                 method: "GET",
                 url: "/getModel/"
         }).done(function (data) {
-                var link = document.createElement("a");
-                link.download = data.filename;
-                link.href = data.path;
-                link.click();
+                if (data.success){
+                        var link = document.createElement("a");
+                        link.download = data.filename;
+                        link.href = data.path;
+                        link.click();
+                        displayMSG("Started Downloading Model","");
+                }
+                else {
+                        displayMSG("",data.error); 
+                }
         });
 }
 
 function getFiles() {
+        displayMSG("Zipping Images and JSON","");
         $.ajax({
                 method: "GET",
                 url: "/getFiles/"
         }).done(function (data) {
-                var link = document.createElement("a");
-                link.download = data.filename;
-                link.href = data.path;
-                link.click();
+                if (data.success){
+                        var link = document.createElement("a");
+                        link.download = data.filename;
+                        link.href = data.path;
+                        link.click();
+                        displayMSG("Started Downloading Files","");
+                }
+                else {
+                        displayMSG("",data.error); 
+                }
         });
 }
 
@@ -116,7 +158,12 @@ function clearData() {
                 method: "GET",
                 url: "/clearDBData/"
         }).done(function (data) {
-                console.log(data.success);
+                if (data.success){
+                        displayMSG("Data cleared from DB","");
+                }
+                else {
+                        displayMSG("",data.error);
+                }
         });
 }
 
@@ -125,7 +172,12 @@ function clearImages() {
                 method: "GET",
                 url: "/clearDBImgs/"
         }).done(function (data) {
-                console.log(data.success);
+                if (data.success){
+                        displayMSG("Images cleared from DB","");
+                }
+                else {
+                        displayMSG("",data.error);
+                }
         });
 }
 
@@ -134,7 +186,27 @@ function clearPairs() {
                 method: "GET",
                 url: "/clearDBPair/"
         }).done(function (data) {
-                console.log(data.success);
+                if (data.success){
+                        displayMSG("Pairs cleared from DB","");
+                }
+                else {
+                        displayMSG("",data.error);
+                }
+        });
+}
+
+function clearModel() {
+        displayMSG("Started Clearing Model Files","");
+        $.ajax({
+                method: "GET",
+                url: "/clearModel/"
+        }).done(function (data) {
+                if (data.success){
+                        displayMSG("Model Files Cleared","");
+                }
+                else {
+                        displayMSG("",data.error);
+                }
         });
 }
 
@@ -144,27 +216,93 @@ function confirmation(){
         if (val == "Confirmed"){
                 return true;
         }
-        console.log("Enter 'Confirmed' to press button");
+        displayMSG("","Enter 'Confirmed' to press button");
         return false;
 }
 
+function createImages(){
+        displayMSG("Started making images","");
+        let val = (document.getElementById("splitInfo").value)
+        console.log(val)
+        val = val.split(" ");
+        console.log(val)
+        path = "./static-content/videos/" + val[0]
+        time = val[1]
+        $.ajax({
+                method: "PUT",
+                url: "/createImages/",
+                data: {"path": path, "time": time}
+        }).done(function (data) {
+                displayMSG(data,"");
+        });
+}
+
+function createPairs(){
+        displayMSG("Started making pairs","");
+        $.ajax({
+                method: "GET",
+                url: "/createPairs/"
+        }).done(function (data) {
+                displayMSG(data,"");
+        });
+}
+
+function getVideoFiles(){
+        $.ajax({
+                method: "GET",
+                url: "/getVideos/"
+        }).done(function (data) {
+                if (data.success){
+                        files = data.Files.join('<br>');
+                        $("#videoList").html(files);
+                }
+                else {
+                        displayMSG("",data.error);
+                }
+        });
+}
+
 $(function () {
-        getRecent();
+        $("#success").hide();
+        $("#error").hide();
         var testingInterval;
+        var videoInterval;
+        var picInterval;
         $("#pics").on('click', function () {
+                picInterval = setInterval(function () {
+                        getPairInfo();
+                }, 60000);
                 clearInterval(testingInterval);
+                clearInterval(videoInterval);
                 $("#img").show();
                 $("#test").hide();
+                $("#server").hide();
                 getPairInfo();
         });
         $("#testing").on('click', function () {
                 testingInterval = setInterval(function () {
                         getRecent();
                 }, 1000);
+                clearInterval(picInterval);
+                clearInterval(videoInterval);
                 $("#test").show();
                 $("#img").hide();
+                $("#server").hide();
+                getRecent();
         });
-        $('#testing').click()
+        $("#control").on('click', function () {
+                videoInterval = setInterval(function () {
+                        getVideoFiles()
+                }, 5000);
+                clearInterval(testingInterval);
+                clearInterval(picInterval);
+        
+                $("#server").show();
+                $("#img").hide();
+                $("#test").hide();
+                getVideoFiles();
+        });
+        $('#control').click()
 
         $("#JSON").on('click', () => getJSON());
         $("#db").on('click', () => getDB());
@@ -190,5 +328,16 @@ $(function () {
                 if (confirmation()){
                         clearPairs()
                 }
+        });
+        $("#clear-model").on('click', function () {
+                if (confirmation()){
+                        clearModel()
+                }
+        });
+        $("#split").on('click', function () {
+                createImages()
+        });
+        $("#pairs").on('click', function () {
+                createPairs()
         });
 });

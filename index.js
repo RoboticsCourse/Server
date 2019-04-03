@@ -1,7 +1,9 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
+var path = require('path');
 const child_process = require('child_process');
+var spawn = require("child_process").spawn;
 var port = 10023;
 
 const sqlite3 = require('sqlite3').verbose();
@@ -32,11 +34,11 @@ app.get('/getFiles/', function (req, res) {
   child_process.execSync(`zip -r files *`, {
     cwd: folderpath
   });
-  res.send({ "filename": "files.zip", "path": "./images/files.zip" })
+  res.send({ "success": true, "filename": "files.zip", "path": "./images/files.zip" })
 })
 
 app.get('/getJSON/', function (req, res) {
-  res.send({ "filename": "data.json", "path": "./images/data.json" })
+  res.send({ "success": true, "filename": "data.json", "path": "./images/data.json" })
 })
 
 app.get('/getModel/', function (req, res) {
@@ -44,7 +46,7 @@ app.get('/getModel/', function (req, res) {
   child_process.execSync(`zip -r ../static-content/mdl.zip *`, {
     cwd: folderpath
   });
-  res.send({ "filename": "mdl.zip", "path": "./mdl.zip" })
+  res.send({ "success": true, "filename": "mdl.zip", "path": "./mdl.zip" })
 })
 
 app.get('/getDB/', function (req, res) {
@@ -52,7 +54,7 @@ app.get('/getDB/', function (req, res) {
   child_process.execSync(`zip -r ../static-content/db.zip *`, {
     cwd: folderpath
   });
-  res.send({ "filename": "db.zip", "path": "./db.zip" })
+  res.send({ "success": true, "filename": "db.zip", "path": "./db.zip" })
 })
 
 app.get('/clearDBData/', function (req, res) {
@@ -60,7 +62,7 @@ app.get('/clearDBData/', function (req, res) {
 
   db.run(sql, function (err) {
     if (err) {
-      console.log(err.message);
+      res.json({ "success": false, "error": err });
     }
     else {
       sql = "CREATE TABLE data (id INTEGER PRIMARY KEY," +
@@ -74,10 +76,10 @@ app.get('/clearDBData/', function (req, res) {
 
       db.run(sql, function (err) {
         if (err) {
-          console.log(err.message);
+          res.json({ "success": false, "error": err });
         }
         else {
-          res.json({ "success": "Cleared Data Table" });
+          res.json({ "success": true });
         }
       });
     }
@@ -89,7 +91,7 @@ app.get('/clearDBImgs/', function (req, res) {
 
   db.run(sql, function (err) {
     if (err) {
-      console.log(err.message);
+      res.json({ "success": false, "error": err });
     }
     else {
       sql = "CREATE TABLE images (id INTEGER PRIMARY KEY," +
@@ -97,10 +99,10 @@ app.get('/clearDBImgs/', function (req, res) {
 
       db.run(sql, function (err) {
         if (err) {
-          console.log(err.message);
+          res.json({ "success": false, "error": err });
         }
         else {
-          res.json({ "success": "Cleared Image Table" });
+          res.json({ "success": true });
         }
       });
     }
@@ -112,7 +114,7 @@ app.get('/clearDBPair/', function (req, res) {
 
   db.run(sql, function (err) {
     if (err) {
-      console.log(err.message);
+      res.json({ "success": false, "error": err });
     }
     else {
       sql = "CREATE TABLE imgData (id INTEGER PRIMARY KEY," +
@@ -121,14 +123,66 @@ app.get('/clearDBPair/', function (req, res) {
 
       db.run(sql, function (err) {
         if (err) {
-          console.log(err.message);
+          res.json({ "success": false, "error": err });
         }
         else {
-          res.json({ "success": "Cleared Pair Table" });
+          res.json({ "success": true });
         }
       });
     }
   });
+})
+
+app.get('/clearModel/', function (req, res) {
+  const directory = "./model/";
+
+  fs.readdir(directory, (err, files) => {
+    if (err){
+      res.json({ "success": false, "error": err });
+    }
+
+    for (const file of files) {
+      fs.unlink(path.join(directory, file), err => {
+        if (err){
+          res.json({ "success": false, "error": err });
+        }
+      });
+    }
+  });
+  res.json({ "success": true });
+})
+
+app.get('/createPairs/', function (req, res) {
+  console.log("Started creating pairs")
+  var process = spawn('python', ["./script.py", "pair"]);
+
+  process.stdout.on('data', function (data) {
+    res.send(data.toString());
+  })
+})
+
+app.get('/getVideos/', function (req, res) {
+  const directory = "./static-content/videos/";
+
+  fs.readdir(directory, (err, files) => {
+    if (err){
+      res.json({ "success": false, "error": err });
+    }
+    else {
+      res.send({"success": true, "Files": files})
+    }
+  });
+})
+
+app.put('/createImages/', function (req, res) {
+  console.log("Started creating images");
+  console.log(req.body)
+  console.log("Path: " + req.body.path + " Time: " + req.body.time);
+  var process = spawn('python', ["./script.py", "split", req.body.path, req.body.time]);
+
+  process.stdout.on('data', function (data) {
+    res.send(data.toString());
+  })
 })
 
 app.get('/getPairs/', function (req, res) {

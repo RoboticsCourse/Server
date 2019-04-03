@@ -6,12 +6,15 @@
 	<script src="index.js"></script>
 </head>
 <body>
+	<Button id="pics"> Look at Paired Pics with Info </Button>
+	<Button id="control"> Server </Button> 
+	<Button id="testing"> Testing Info </Button> <br><br>
 	<div id="test">
-		<Button id="pics"> Look at Paired Pics with Info </Button>
 		<div id="sensors"> </div><br />
 	</div>
-	<div id = "img">
-		<Button id="testing"> Testing Info </Button> <br><br>
+	<div id = "server">
+		<span style="color: #D8000C; background-color: #FFBABA; margin: 10px 0; padding: 10px; border-radius: 3px 3px 3px 3px;" id="error" > </span> <br>
+		<span style="color: #270; background-color: #DFF2BF; margin: 10px 0; padding: 10px; border-radius: 3px 3px 3px 3px;" id="success" > </span> <br><br>
 		<input type="submit" id="video" value="Upload video">
 		<input type="submit" id="db" value="Download DB">
 		<input type="submit" id="JSON" value="Download JSON">
@@ -23,13 +26,16 @@
 		<input type="submit" id="clear-db" value="Clear the database">
 		<input type="submit" id="clear-data" value="Clear the data">
 		<input type="submit" id="clear-img" value="Clear the images">
-		<input type="submit" id="clear-pairs" value="Clear the pairs"> <br><br>
+		<input type="submit" id="clear-pairs" value="Clear the pairs"> 
+		<input type="submit" id="clear-model" value="Clear the model"> <br><br>
 
 		<div id="videoList"></div> <br>
 
-		<input type="text" name="splitiInfo">
+		<input style="width: 200px;" type="text" id="splitInfo" placeholder="12:03:19:15:25:17:6100 2500">
 		<input type="submit" id="split" value="Split Video">
-		<input type="submit" id="clear-data" value="Make Pairs">
+		<input type="submit" id="pairs" value="Make Pairs">
+	</div>
+	<div id = "img">
 		<div id="gallery" class="scrolling-wrapper">
 	</div>
 </body>
